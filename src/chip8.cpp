@@ -16,8 +16,26 @@ void Chip8::clock_cycle() {
     
     int x, y;
     switch(opcode & 0xF000) {
+        x = (opcode & 0x0F00) >> 8;
+        y = (opcode & 0x00F0) >> 4;
+
         case 0x1000:
             pc = opcode & 0xFFF;
+            break;
+        case 0x3000:
+            if (V[x] == opcode & 0xFF) {
+                pc += 2;
+            }
+            break;
+        case 0x4000:
+            if (V[x] != opcode & 0xFF) {
+                pc += 2;
+            }
+            break;
+        case 0x5000:
+            if (V[x] == V[y]) {
+                pc += 2;
+            }
             break;
         case 0x6000: // vx := NN
             V[(opcode & 0x0F00) >> 8] = opcode & 0xFF;
@@ -26,8 +44,6 @@ void Chip8::clock_cycle() {
             V[(opcode & 0x0F00) >> 8] += opcode & 0xFF;
             break;
         case 0x8000:
-            x = (opcode & 0x0F00) >> 8;
-            y = (opcode & 0x00F0) >> 4;
             switch(opcode & 0x000F) {
                 case 0x0:
                     V[x] = V[y];
@@ -65,6 +81,17 @@ void Chip8::clock_cycle() {
                     V[x] = V[y] << 1;
                     break;
             }
+            break;
+        case 0x9000:
+            if (V[x] != V[y]) {
+                pc += 2;
+            }
+            break;
+        case 0xA000:
+            I = opcode & 0xFFF;
+            break;
+        case 0xB000:
+            pc = (opcode & 0xFFF) + V[0];
             break;
     }
 }
