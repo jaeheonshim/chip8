@@ -16,6 +16,9 @@ void Chip8::clock_cycle() {
     
     int x, y;
     switch(opcode & 0xF000) {
+        case 0x1000:
+            pc = opcode & 0xFFF;
+            break;
         case 0x6000: // vx := NN
             V[(opcode & 0x0F00) >> 8] = opcode & 0xFF;
             break;
