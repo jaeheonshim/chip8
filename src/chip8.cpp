@@ -35,13 +35,16 @@ void Chip8::clock_cycle() {
         case 0x0000:
             switch(opcode & 0x0FFF) {
                 case 0x00E0:
+                    std::memset(gfx, 0, sizeof(gfx));
+                    draw_flag = true;
                     break;
                 case 0x00EE:
                     --sp;
                     pc = stack[sp];
                     break;
                 default:
-
+                    // Not implemented
+                    break;
             }
             break;
         case 0x1000:
@@ -68,10 +71,10 @@ void Chip8::clock_cycle() {
             }
             break;
         case 0x6000: // vx := NN
-            V[(opcode & 0x0F00) >> 8] = opcode & 0xFF;
+            V[x] = opcode & 0xFF;
             break;
         case 0x7000:
-            V[(opcode & 0x0F00) >> 8] += opcode & 0xFF;
+            V[x] += opcode & 0xFF;
             break;
         case 0x8000:
             switch(opcode & 0x000F) {
@@ -128,10 +131,10 @@ void Chip8::clock_cycle() {
             break;
         case 0xD000:
             V[0xF] = 0;
-            for(unsigned char r{ V[y] }; r < (opcode & 0xF); ++r) {
+            for(unsigned char r_i{ 0 }; r_i < (opcode & 0xF); ++r_i) {
                 for(unsigned char c_i{ 0 }; c_i < 8; ++c_i) {
-                    if((memory[I + r] & (0x80 >> c_i)) != 0) {
-                        unsigned char& pixel = gfx[r * 64 + V[x] + c_i];
+                    if((memory[I + r_i] & (0x80 >> c_i)) != 0) {
+                        unsigned char& pixel = gfx[(r_i + V[y]) * 64 + V[x] + c_i];
                         if(pixel == 1) {
                             V[0xF] = 1;
                         }
@@ -139,6 +142,7 @@ void Chip8::clock_cycle() {
                     }
                 }
             }
+            draw_flag = true;
             break;
         case 0xE000:
             switch(opcode & 0xFF) {
@@ -155,6 +159,7 @@ void Chip8::clock_cycle() {
             }
             break;
         case 0xF000:
+            unsigned char value = V[x];
             switch(opcode & 0xFF) {
                 case 0x07:
                     V[x] = delay_timer;
@@ -182,7 +187,6 @@ void Chip8::clock_cycle() {
                     I = V[x];
                     break;
                 case 0x33:
-                    unsigned char value = V[x];
                     memory[I + 2] = value % 10;
                     value /= 10;
                     memory[I + 1] = value % 10;
@@ -205,6 +209,10 @@ void Chip8::clock_cycle() {
 }
 
 void Chip8::load(std::istream& prog) {
-    std::istream_iterator<unsigned char> ii{ prog };
-    std::copy_n(ii, 4096 - 512, memory + 512);
+    constexpr std::size_t START = 0x200;
+    constexpr std::size_t MAX_SIZE = 4096 - START;
+
+    prog.read(reinterpret_cast<char*>(memory + START), MAX_SIZE);
+
+    pc = START;
 }

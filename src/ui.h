@@ -33,6 +33,9 @@ public:
     Chip8Display(int x, int y, int w, int h) : Fl_Widget(x, y, w, h) {}
 
     void draw() override;
+    void update(const Chip8& chip8);
+private:
+    unsigned char gfx_buffer[64 * 32];
 };
 
 class Chip8Controls : public Fl_Flex {

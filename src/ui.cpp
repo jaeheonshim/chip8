@@ -1,6 +1,7 @@
 #include "ui.h"
 
 #include <string>
+#include <cstring>
 
 inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr) {
     auto* row = new Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW);
@@ -72,6 +73,28 @@ void Chip8Registers::update(const Chip8& chip8) {
 void Chip8Display::draw() {
     fl_color(FL_BLACK);
     fl_rectf(x(), y(), w(), h());
+
+    int sx = w() / W;
+    int sy = h() / H;
+    int scale = std::max(1, std::min(sx, sy));
+
+    fl_color(FL_WHITE);
+    for(int y = 0; y < 32; ++y) {
+        for(int x = 0; x < 64; ++x) {
+            if(gfx_buffer[y * 64 + x]) {
+                fl_rectf(
+                    this->x() + x * scale,
+                    this->y() + y * scale,
+                    scale,
+                    scale
+                );
+            }
+        }
+    }
+}
+
+void Chip8Display::update(const Chip8& chip8) {
+    memcpy(gfx_buffer, chip8.gfx, 64 * 32);
 }
 
 Chip8Gui::Chip8Gui(int w, int h) : Fl_Window(w, h, "CHIP-8") {

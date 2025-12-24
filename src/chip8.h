@@ -20,12 +20,13 @@ public:
 
     unsigned char key[16];
 
+    bool draw_flag = false;
+
     void initialize();
     void clock_cycle();
     void load(std::istream& prog);
 
     Chip8();
-
 private:
     std::default_random_engine rand_gen;
     std::uniform_int_distribution<uint8_t> rand_byte;
