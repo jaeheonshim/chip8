@@ -56,12 +56,12 @@ void Chip8::clock_cycle() {
             pc = opcode & 0xFFF;
             break;
         case 0x3000:
-            if (V[x] == opcode & 0xFF) {
+            if (V[x] == (opcode & 0xFF)) {
                 pc += 2;
             }
             break;
         case 0x4000:
-            if (V[x] != opcode & 0xFF) {
+            if (V[x] != (opcode & 0xFF)) {
                 pc += 2;
             }
             break;
