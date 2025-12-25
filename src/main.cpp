@@ -3,9 +3,10 @@
 #include "runner.h"
 #include <fstream>
 #include <chrono>
+#include <iostream>
 
 Chip8 chip8{};
-Chip8Gui gui(700, 400);
+Chip8Gui gui(800, 450, chip8);
 Chip8Runner runner(chip8, gui);
 
 void on_step(Fl_Widget* w, void* userdata) {

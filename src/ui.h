@@ -8,9 +8,12 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Pack.H>
+#include <FL/Fl_Grid.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Hor_Value_Slider.H>
+
+class Chip8Gui; // Forward decl
 
 class Chip8Registers : public Fl_Group {
 public:
@@ -28,14 +31,20 @@ private:
 
 class Chip8Display : public Fl_Widget {
 public:
+
     static constexpr int W = 64;
     static constexpr int H = 32;
 
-    Chip8Display(int x, int y, int w, int h) : Fl_Widget(x, y, w, h) {}
+    Chip8Display(Chip8Gui* gui) : Fl_Widget(0, 0, 0, 0), gui(gui) {
+
+    }
 
     void draw() override;
     void update(const Chip8& chip8);
+
+    int handle(int e) override;
 private:
+    Chip8Gui* gui;
     unsigned char gfx_buffer[64 * 32];
 };
 
@@ -58,12 +67,50 @@ public:
     Chip8Controls();
 };
 
+class KeyBox : public Fl_Box {
+public:
+    KeyBox(int X, int Y, int W, int H, char key, int index) : Fl_Box(X, Y, W, H), key(key), index(index) {
+        box(FL_THIN_DOWN_BOX);
+        labelsize(14);
+
+        char label[2]{ key, '\0'};
+        copy_label(label);
+    }
+
+    void draw() override {
+        Fl_Box::draw();
+
+        fl_font(FL_HELVETICA, 10);
+        fl_color(FL_DARK3);
+
+        fl_draw(std::to_string(index).c_str(), x() + 3, y() + 10);
+    }
+
+private:
+    int index;
+    char key;
+};
+
+class Chip8Keybinds : public Fl_Grid {
+public:
+    Chip8Keybinds();
+
+    int get_key_index(int k);
+private:
+    char keybinds[16] = {'1', '2', '3', '4',
+                        'Q', 'W', 'E', 'R',
+                        'A', 'S', 'D', 'F',
+                        'Z', 'X', 'C', 'V'};
+};
+
 class Chip8Gui : public Fl_Window {
 public:
-    Chip8Gui(int w, int h);
+    Chip8Gui(int w, int h, Chip8& chip);
     ~Chip8Gui();
 
     Chip8Display* display;
     Chip8Registers* registers;
     Chip8Controls* controls;
+    Chip8Keybinds* keybinds;
+    Chip8& chip;
 };

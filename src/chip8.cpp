@@ -15,6 +15,10 @@ void Chip8::initialize() {
     I = 0;
     sp = 0;
 
+    for(int i{ 0 }; i < 16; ++i) {
+        V[i] = 0;
+    }
+
     std::memset(gfx, 0, sizeof(gfx));
 
     for(int i{ 0 }; i < 80; ++i) {
