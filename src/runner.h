@@ -3,13 +3,14 @@
 #include "chip8.h"
 #include "ui.h"
 #include <chrono>
+#include "audio.h"
 
 class Chip8Runner {
 public:
     static constexpr double TIMER_HZ = 60.0;
     static constexpr double BASE_CPU_HZ = 500.0;
 
-    Chip8Runner(Chip8& c, Chip8Gui& g) : chip(c), gui(g) {
+    Chip8Runner(Chip8& c, Chip8Gui& g, Chip8Audio& a) : chip(c), gui(g), audio(a) {
         last = clock::now();
     }
 
@@ -22,6 +23,7 @@ public:
 
     void pause() {
         r = false;
+        audio.stop();
     }
 
     bool running() {
@@ -35,6 +37,7 @@ private:
 
     Chip8& chip;
     Chip8Gui& gui;
+    Chip8Audio& audio;
 
     clock::time_point last;
     double accum = 0.0;
@@ -45,4 +48,5 @@ private:
     }
 
     void tick(); // run cycles based on hz
+    void post_clock_cycle();
 };

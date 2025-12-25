@@ -1,16 +1,22 @@
 #include "runner.h"
 #include <FL/Fl.H>
+#include <FL/fl_ask.H>
 
-void Chip8Runner::step() {
-    chip.clock_cycle();
-
+void Chip8Runner::post_clock_cycle() {
     gui.registers->update(chip);
+    gui.timers->update(chip);
 
     if(chip.draw_flag) {
         chip.draw_flag = false;
         gui.display->update(chip);
         gui.display->redraw();
     }
+}
+
+void Chip8Runner::step() {
+    chip.clock_cycle();
+
+    post_clock_cycle();
 }
 
 void Chip8Runner::tick() {
@@ -37,16 +43,16 @@ void Chip8Runner::tick() {
         }
 
         if(chip.delay_timer > 0) --chip.delay_timer;
-        if(chip.sound_timer > 0) --chip.sound_timer;
+
+        if(chip.sound_timer > 0) {
+            --chip.sound_timer;
+            audio.start();
+        } else {
+            audio.stop();
+        }
     }
 
-    gui.registers->update(chip);
-
-    if(chip.draw_flag) {
-        chip.draw_flag = false;
-        gui.display->update(chip);
-        gui.display->redraw();
-    }
+    post_clock_cycle();
 
     if(r) {
         Fl::repeat_timeout(1.0 / 240.0, &Chip8Runner::tick_cb, this);

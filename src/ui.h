@@ -30,6 +30,18 @@ private:
     Fl_Input* sp;
 };
 
+class Chip8Timers : public Fl_Group {
+public:
+    static const int ROW_H = 25;
+
+    Chip8Timers(int x, int y);
+    void update(const Chip8& chip8);
+
+private:
+    Fl_Input* delay;
+    Fl_Input* sound;
+};
+
 class Chip8Display : public Fl_Widget {
 public:
 
@@ -89,6 +101,7 @@ public:
 
     Chip8Display* display;
     Chip8Registers* registers;
+    Chip8Timers* timers;
     Chip8Controls* controls;
     Chip8Keybinds* keybinds;
     Chip8& chip;

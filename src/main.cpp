@@ -6,7 +6,8 @@
 
 Chip8 chip8{};
 Chip8Gui gui(800, 450, chip8);
-Chip8Runner runner(chip8, gui);
+Chip8Audio audio{};
+Chip8Runner runner(chip8, gui, audio);
 
 void on_step(Fl_Widget* w, void* userdata) {
     runner.step();
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
     gui.controls->run_pause->callback(on_run_pause);
     gui.controls->step->callback(on_step);
 
-    std::ifstream ifs("5-quirks.ch8");
+    std::ifstream ifs("7-beep.ch8");
     chip8.load(ifs);
 
     return Fl::run();

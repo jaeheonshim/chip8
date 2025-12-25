@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cctype>
 
-inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr) {
+inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int label_size = 36) {
     auto* row = new Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW);
     row->begin();
 
@@ -16,7 +16,7 @@ inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr) {
     input_ptr = new Fl_Input(0, 0, 0, 0);
     
     row->end();
-    row->fixed(lab, 32);
+    row->fixed(lab, label_size);
 
     return row;
 }
@@ -25,6 +25,7 @@ Chip8Registers::Chip8Registers(int x, int y) : Fl_Group(x, y, 2000, 242) {
     begin();
 
     auto* header = new Fl_Box(0, 0, w(), 16, "Registers");
+    header->labelsize(13);
     header->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
     auto* inner = new Fl_Flex(0, 16, w(), h() - 16, Fl_Flex::ROW);
@@ -69,6 +70,35 @@ void Chip8Registers::update(const Chip8& chip8) {
     I->value(static_cast<int>(chip8.I));
     pc->value(static_cast<int>(chip8.pc));
     sp->value(static_cast<int>(chip8.sp));
+}
+
+Chip8Timers::Chip8Timers(int x, int y) : Fl_Group(x, y, 10, 242) {
+    begin();
+
+    auto* header = new Fl_Box(0, 0, w(), 16, "Timers");
+    header->labelsize(13);
+    header->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+    auto* inner = new Fl_Flex(0, 20, w(), h() - 20, Fl_Flex::ROW);
+    inner->box(FL_ENGRAVED_BOX);
+    inner->margin(8);
+    inner->gap(2);
+
+    auto* timers = new Fl_Flex(Fl_Flex::COLUMN);
+    auto* delay_p = create_register_row("DELAY", delay, 54);
+    timers->fixed(delay_p, ROW_H);
+    auto* sound_p = create_register_row("SOUND", sound, 54);
+    timers->fixed(sound_p, ROW_H);
+    timers->end();
+
+    inner->end();
+
+    end();
+}
+
+void Chip8Timers::update(const Chip8& chip8) {
+    delay->value(static_cast<int>(chip8.delay_timer));
+    sound->value(static_cast<int>(chip8.sound_timer));
 }
 
 Chip8Controls::Chip8Controls() : Fl_Flex(0, 0, 0, 55, Fl_Flex::COLUMN) {
@@ -168,6 +198,7 @@ Chip8Gui::Chip8Gui(int w, int h, Chip8& chip) : Fl_Window(w, h, "CHIP-8"), chip(
 
     registers = new Chip8Registers(0, 0);
     right_pane->fixed(registers, registers->h());
+    timers = new Chip8Timers(0, 0);
 
     right_pane->end();
 
