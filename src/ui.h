@@ -14,6 +14,7 @@
 #include <FL/Fl_Hor_Value_Slider.H>
 
 class Chip8Gui; // Forward decl
+class KeyBox;
 
 class Chip8Registers : public Fl_Group {
 public:
@@ -67,35 +68,11 @@ public:
     Chip8Controls();
 };
 
-class KeyBox : public Fl_Box {
-public:
-    KeyBox(int X, int Y, int W, int H, char key, int index) : Fl_Box(X, Y, W, H), key(key), index(index) {
-        box(FL_THIN_DOWN_BOX);
-        labelsize(14);
-
-        char label[2]{ key, '\0'};
-        copy_label(label);
-    }
-
-    void draw() override {
-        Fl_Box::draw();
-
-        fl_font(FL_HELVETICA, 10);
-        fl_color(FL_DARK3);
-
-        static const char* hex = "0123456789ABCDEF";
-        char idx[2]{ hex[index], '\0' };
-        fl_draw(idx, x() + 3, y() + 10);
-    }
-
-private:
-    int index;
-    char key;
-};
-
 class Chip8Keybinds : public Fl_Grid {
 public:
-    Chip8Keybinds();
+    KeyBox* keyboxes[16];
+
+    Chip8Keybinds(Chip8Gui* gui);
 
     int get_key_index(int k);
 private:
@@ -115,4 +92,22 @@ public:
     Chip8Controls* controls;
     Chip8Keybinds* keybinds;
     Chip8& chip;
+};
+
+class KeyBox : public Fl_Box {
+public:
+    KeyBox(int X, int Y, int W, int H, char key, int index, Chip8Gui* gui) : Fl_Box(X, Y, W, H), key(key), index(index), gui(gui) {
+        box(FL_THIN_DOWN_BOX);
+        labelsize(14);
+
+        char label[2]{ key, '\0'};
+        copy_label(label);
+    }
+
+    void draw() override;
+
+private:
+    int index;
+    char key;
+    Chip8Gui* gui;
 };

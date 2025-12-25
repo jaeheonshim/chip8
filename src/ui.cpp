@@ -122,13 +122,13 @@ void Chip8Display::update(const Chip8& chip8) {
     memcpy(gfx_buffer, chip8.gfx, 64 * 32);
 }
 
-Chip8Keybinds::Chip8Keybinds() : Fl_Grid(0, 0, 30, 30) {
+Chip8Keybinds::Chip8Keybinds(Chip8Gui* gui) : Fl_Grid(0, 0, 30, 30) {
     layout(4, 4, 0, 1);
     begin();
 
     for(int i{ 0 }; i < 16; ++i) {
-        KeyBox* box = new KeyBox(0, 0, 0, 0, keybinds[i], i);
-        widget(box, i / 4, i % 4);
+        keyboxes[i] = new KeyBox(0, 0, 0, 0, keybinds[i], i, gui);
+        widget(keyboxes[i], i / 4, i % 4);
     }
 
     show_grid(0);
@@ -154,7 +154,7 @@ Chip8Gui::Chip8Gui(int w, int h, Chip8& chip) : Fl_Window(w, h, "CHIP-8"), chip(
     
     display = new Chip8Display(this);
     left_pane->fixed(display, 256);
-    keybinds = new Chip8Keybinds();
+    keybinds = new Chip8Keybinds(this);
 
     left_pane->end();
 
@@ -187,7 +187,7 @@ int Chip8Display::handle(int e) {
         take_focus();
         return 1;
     }
-    
+
     if(e == FL_FOCUS) {
         redraw();
         return 1;
@@ -196,6 +196,7 @@ int Chip8Display::handle(int e) {
     if(e == FL_UNFOCUS) {
         for(int i = 0; i < 16; ++i) {
             gui->chip.key[i] = 0;
+            gui->keybinds->keyboxes[i]->redraw();
         }
 
         redraw();
@@ -209,12 +210,30 @@ int Chip8Display::handle(int e) {
         bool down = (e == FL_KEYDOWN);
         int key = Fl::event_key();
         int key_index = gui->keybinds->get_key_index(key);
-        std::cout << key_index << std::endl;
         if(key_index != -1) {
             gui->chip.key[key_index] = down;
+            gui->keybinds->keyboxes[key_index]->redraw();
             return 1;
         }
     }
 
     return Fl_Widget::handle(e);
+}
+
+void KeyBox::draw()  {
+    std::cout << "redraw!" << std::endl;
+    if(gui->chip.key[index]) {
+        color(FL_YELLOW);
+    } else {
+        color(FL_BACKGROUND_COLOR);
+    }
+
+    Fl_Box::draw();
+
+    fl_font(FL_HELVETICA, 10);
+    fl_color(FL_DARK3);
+
+    static const char* hex = "0123456789ABCDEF";
+    char idx[2]{ hex[index], '\0' };
+    fl_draw(idx, x() + 3, y() + 10);
 }

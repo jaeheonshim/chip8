@@ -158,12 +158,12 @@ void Chip8::clock_cycle() {
         case 0xE000:
             switch(opcode & 0xFF) {
                 case 0x9E:
-                    if(key[x]) {
+                    if(key[V[x]]) {
                         pc += 2;
                     }
                     break;
                 case 0xA1:
-                    if(!key[x]) {
+                    if(!key[V[x]]) {
                         pc += 2;
                     }
                     break;
