@@ -142,10 +142,12 @@ void Chip8::clock_cycle() {
             break;
         case 0xD000:
             V[0xF] = 0;
+
             for(unsigned char r_i{ 0 }; r_i < (opcode & 0xF); ++r_i) {
                 for(unsigned char c_i{ 0 }; c_i < 8; ++c_i) {
                     if((memory[I + r_i] & (0x80 >> c_i)) != 0) {
-                        unsigned char& pixel = gfx[(r_i + V[y]) * 64 + V[x] + c_i];
+                        // modulus wraps around the drawing
+                        unsigned char& pixel = gfx[(r_i + (V[y] % 32)) * 64 + (V[x] % 64) + c_i];
                         if(pixel == 1) {
                             V[0xF] = 1;
                         }
