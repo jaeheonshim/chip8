@@ -10,6 +10,7 @@
 #include <FL/Fl_Pack.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Hor_Value_Slider.H>
 
 class Chip8Registers : public Fl_Group {
 public:
@@ -38,19 +39,23 @@ private:
     unsigned char gfx_buffer[64 * 32];
 };
 
+class SpeedMultiplierSlider : public Fl_Hor_Value_Slider {
+public:
+    using Fl_Hor_Value_Slider::Fl_Hor_Value_Slider;
+
+    int format(char* buf) override {
+        std::snprintf(buf, 64, "%.2fx", value());
+        return 1;
+    }
+};
+
 class Chip8Controls : public Fl_Flex {
 public:
+    Fl_Button* run_pause;
     Fl_Button* step;
+    Fl_Value_Slider* slider;
 
-    Chip8Controls(int x, int y) : Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW) {
-        begin();
-
-        new Fl_Button(0, 0, 0, 0, "Run");
-        step = new Fl_Button(0, 0, 0, 0, "Step");
-        new Fl_Button(0, 0, 0, 0, "Reset");
-
-        end();
-    }
+    Chip8Controls();
 };
 
 class Chip8Gui : public Fl_Window {

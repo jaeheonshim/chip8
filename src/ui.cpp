@@ -70,6 +70,25 @@ void Chip8Registers::update(const Chip8& chip8) {
     sp->value(static_cast<int>(chip8.sp));
 }
 
+Chip8Controls::Chip8Controls() : Fl_Flex(0, 0, 0, 55, Fl_Flex::COLUMN) {
+    gap(2);
+    begin();
+
+    auto* row = new Fl_Flex(Fl_Flex::ROW);
+    run_pause = new Fl_Button(0, 0, 0, 0, "Run");
+    step = new Fl_Button(0, 0, 0, 0, "Step");
+    new Fl_Button(0, 0, 0, 0, "Reset");
+    row->end();
+
+    slider = new SpeedMultiplierSlider(0, 0, 0, 0, nullptr);
+    slider->range(0.25, 4);
+    slider->step(0.25);
+    slider->value(1);
+    fixed(slider, 20);
+
+    end();
+}
+
 void Chip8Display::draw() {
     fl_color(FL_BLACK);
     fl_rectf(x(), y(), w(), h());
@@ -111,7 +130,7 @@ Chip8Gui::Chip8Gui(int w, int h) : Fl_Window(w, h, "CHIP-8") {
     right_pane->margin(4);
     right_pane->gap(4);
 
-    controls = new Chip8Controls(0, 0);
+    controls = new Chip8Controls();
     right_pane->fixed(controls, controls->h());
 
     registers = new Chip8Registers(0, 0);

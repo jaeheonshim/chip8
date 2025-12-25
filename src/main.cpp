@@ -1,32 +1,35 @@
 #include "chip8.h"
 #include "ui.h"
+#include "runner.h"
 #include <fstream>
+#include <chrono>
 
 Chip8 chip8{};
+Chip8Gui gui(700, 400);
+Chip8Runner runner(chip8, gui);
 
 void on_step(Fl_Widget* w, void* userdata) {
-    chip8.clock_cycle();
+    runner.step();
+}
+
+void on_run_pause(Fl_Widget* w, void* userdata) {
+    if(runner.running()) {
+        gui.controls->run_pause->label("Run");
+        runner.pause();
+    } else {
+        gui.controls->run_pause->label("Pause");
+        runner.run();
+    }
 }
 
 int main(int argc, char **argv) {
     chip8.initialize();
 
-    Chip8Gui gui(700, 600);
-
+    gui.controls->run_pause->callback(on_run_pause);
     gui.controls->step->callback(on_step);
 
-    std::ifstream ifs("3-corax+.ch8");
+    std::ifstream ifs("2-ibm-logo.ch8");
     chip8.load(ifs);
 
-    while(Fl::wait()) {
-        gui.registers->update(chip8);
-        if(chip8.draw_flag) {
-            gui.display->update(chip8);
-            gui.display->redraw();
-            chip8.draw_flag = false;
-        }
-    }
-
-
-    return 0;
+    return Fl::run();
 }
