@@ -83,7 +83,9 @@ public:
         fl_font(FL_HELVETICA, 10);
         fl_color(FL_DARK3);
 
-        fl_draw(std::to_string(index).c_str(), x() + 3, y() + 10);
+        static const char* hex = "0123456789ABCDEF";
+        char idx[2]{ hex[index], '\0' };
+        fl_draw(idx, x() + 3, y() + 10);
     }
 
 private:
