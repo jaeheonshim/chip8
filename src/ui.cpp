@@ -3,7 +3,6 @@
 #include <string>
 #include <cstring>
 #include <cctype>
-#include <iostream>
 
 inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr) {
     auto* row = new Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW);
@@ -221,7 +220,6 @@ int Chip8Display::handle(int e) {
 }
 
 void KeyBox::draw()  {
-    std::cout << "redraw!" << std::endl;
     if(gui->chip.key[index]) {
         color(FL_YELLOW);
     } else {

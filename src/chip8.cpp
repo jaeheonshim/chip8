@@ -176,14 +176,31 @@ void Chip8::clock_cycle() {
                     V[x] = delay_timer;
                     break;
                 case 0x0A:
-                    pc -= 2;
-                    for(unsigned char i{ 0 }; i < 16; ++i) {
-                        if(key[i]) {
-                            pc += 2;
-                            V[x] = i;
-                            break;
+                    pc -= 2; // going to stay on this instruction for now
+                    if(fx0a_state == OUT) {
+                        // entering for first time
+                        fx0a_state = IN;
+                        
+                        // clear buffer
+                        for(int i{ 0 }; i < 16; ++i) {
+                            fx0a_buffer[i] = 0;
                         }
                     }
+
+                    for(unsigned char i{ 0 }; i < 16; ++i) {
+                        if(key[i]) {
+                            fx0a_buffer[i] = 1;
+                        } else {
+                            if(fx0a_buffer[i]) {
+                                // a pressed key was released, we can continue
+                                fx0a_state = OUT;
+                                V[x] = i;
+                                pc += 2;
+                                break;
+                            }
+                        }
+                    }
+
                     break;
                 case 0x15:
                     delay_timer = V[x];

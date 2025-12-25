@@ -3,7 +3,6 @@
 #include "runner.h"
 #include <fstream>
 #include <chrono>
-#include <iostream>
 
 Chip8 chip8{};
 Chip8Gui gui(800, 450, chip8);

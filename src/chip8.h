@@ -3,6 +3,13 @@
 #include <istream>
 #include <random>
 
+// Instruction FX0A should wait for a key to be pressed and then subsequently
+// released. We can use a simple state machine for this
+enum FX0A_State {
+    IN,
+    OUT
+};
+
 class Chip8 {
 public:
     unsigned short opcode;
@@ -30,4 +37,7 @@ public:
 private:
     std::default_random_engine rand_gen;
     std::uniform_int_distribution<uint8_t> rand_byte;
+
+    FX0A_State fx0a_state = OUT;
+    unsigned char fx0a_buffer[16];
 };
