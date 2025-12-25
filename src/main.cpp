@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     gui.controls->run_pause->callback(on_run_pause);
     gui.controls->step->callback(on_step);
 
-    std::ifstream ifs("2-ibm-logo.ch8");
+    std::ifstream ifs("4-flags.ch8");
     chip8.load(ifs);
 
     return Fl::run();

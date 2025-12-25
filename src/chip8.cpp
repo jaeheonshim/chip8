@@ -31,6 +31,8 @@ void Chip8::clock_cycle() {
     
     int x{ (opcode & 0x0F00) >> 8 };
     int y{ (opcode & 0x00F0) >> 4 };
+    unsigned char flag;
+
     switch(opcode & 0xF000) {
         case 0x0000:
             switch(opcode & 0x0FFF) {
@@ -91,27 +93,32 @@ void Chip8::clock_cycle() {
                     V[x] = V[x] ^ V[y];
                     break;
                 case 0x4:
-                    if (V[x] > 0xFF - V[y]) V[0xF] = 1;
-                    else V[0xF] = 0;
+                    if (V[x] > 0xFF - V[y]) flag = 1;
+                    else flag = 0;
                     V[x] = V[x] + V[y];
+                    V[0xF] = flag;
                     break;
                 case 0x5: // vx -= vy
-                    if (V[x] < V[y]) V[0xF] = 0;
-                    else V[0xF] = 1;
+                    if (V[x] < V[y]) flag = 0;
+                    else flag = 1;
                     V[x] = V[x] - V[y];
+                    V[0xF] = flag;
                     break;
                 case 0x6: //
-                    V[0xF] = V[y] & 0x1;
-                    V[x] = V[y] >> 1;
+                    flag = V[x] & 0x1;
+                    V[x] = V[x] >> 1;
+                    V[0xF] = flag;
                     break;
                 case 0x7:
-                    if (V[x] > V[y]) V[0xF] = 0;
-                    else V[0xF] = 1;
+                    if (V[x] > V[y]) flag = 0;
+                    else flag = 1;
                     V[x] = V[y] - V[x];
+                    V[0xF] = flag;
                     break;
                 case 0xE:
-                    V[0xF] = V[y] & 0x8000;
-                    V[x] = V[y] << 1;
+                    flag = (V[x] & 0x80) >> 7;
+                    V[x] = V[x] << 1;
+                    V[0xF] = flag;
                     break;
             }
             break;
