@@ -89,12 +89,15 @@ void Chip8::clock_cycle() {
                     break;
                 case 0x1:
                     V[x] = V[x] | V[y];
+                    V[0xF] = 0;
                     break;
                 case 0x2:
                     V[x] = V[x] & V[y];
+                    V[0xF] = 0;
                     break;
                 case 0x3:
                     V[x] = V[x] ^ V[y];
+                    V[0xF] = 0;
                     break;
                 case 0x4:
                     if (V[x] > 0xFF - V[y]) flag = 1;
