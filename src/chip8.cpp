@@ -112,6 +112,7 @@ void Chip8::clock_cycle() {
                     V[0xF] = flag;
                     break;
                 case 0x6: //
+                    V[x] = V[y]; // quirk
                     flag = V[x] & 0x1;
                     V[x] = V[x] >> 1;
                     V[0xF] = flag;
@@ -123,6 +124,7 @@ void Chip8::clock_cycle() {
                     V[0xF] = flag;
                     break;
                 case 0xE:
+                    V[x] = V[y]; // quirk
                     flag = (V[x] & 0x80) >> 7;
                     V[x] = V[x] << 1;
                     V[0xF] = flag;
