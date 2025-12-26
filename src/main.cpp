@@ -19,6 +19,7 @@ void on_run_pause(Fl_Widget* w, void* userdata) {
         runner.pause();
     } else {
         gui.controls->run_pause->label("Pause");
+        gui.display->take_focus();
         runner.run();
     }
 }

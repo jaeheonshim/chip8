@@ -48,16 +48,14 @@ public:
     static constexpr int W = 64;
     static constexpr int H = 32;
 
-    Chip8Display(Chip8Gui* gui) : Fl_Widget(0, 0, 0, 0), gui(gui) {
+    Chip8Display() : Fl_Widget(0, 0, 0, 0) {
 
     }
 
     void draw() override;
     void update(const Chip8& chip8);
 
-    int handle(int e) override;
 private:
-    Chip8Gui* gui;
     unsigned char gfx_buffer[64 * 32];
 };
 
@@ -99,6 +97,7 @@ class Chip8Gui : public Fl_Window {
 public:
     Chip8Gui(int w, int h, Chip8& chip);
     ~Chip8Gui();
+    int handle(int e) override;
 
     Chip8Display* display;
     Chip8Registers* registers;

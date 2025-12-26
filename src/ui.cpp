@@ -144,10 +144,6 @@ void Chip8Display::draw() {
             }
         }
     }
-
-    if(Fl::focus() == this) {
-        fl_rect(x(), y(), w(), h(), FL_RED);
-    }
 }
 
 void Chip8Display::update(const Chip8& chip8) {
@@ -184,7 +180,7 @@ Chip8Gui::Chip8Gui(int w, int h, Chip8& chip) : Fl_Window(w, h, "CHIP-8"), chip(
 
     auto* left_pane = new Fl_Flex(0, 0, 0, 0, Fl_Flex::COLUMN);
     
-    display = new Chip8Display(this);
+    display = new Chip8Display();
     left_pane->fixed(display, 256);
     keybinds = new Chip8Keybinds(this);
 
@@ -215,42 +211,19 @@ Chip8Gui::~Chip8Gui() {
 
 }
 
-int Chip8Display::handle(int e) {
-    if(e == FL_PUSH) {
-        take_focus();
-        return 1;
-    }
-
-    if(e == FL_FOCUS) {
-        redraw();
-        return 1;
-    }
-    
-    if(e == FL_UNFOCUS) {
-        for(int i = 0; i < 16; ++i) {
-            gui->chip.key[i] = 0;
-            gui->keybinds->keyboxes[i]->redraw();
-        }
-
-        redraw();
-        
-        return 1;
-    }
-    
+int Chip8Gui::handle(int e) {   
     if (e == FL_KEYDOWN || e == FL_KEYUP) {
-        if(Fl::focus() != this) return 0;
-
         bool down = (e == FL_KEYDOWN);
         int key = Fl::event_key();
-        int key_index = gui->keybinds->get_key_index(key);
+        int key_index = keybinds->get_key_index(key);
         if(key_index != -1) {
-            gui->chip.key[key_index] = down;
-            gui->keybinds->keyboxes[key_to_grid[key_index]]->redraw();
+            chip.key[key_index] = down;
+            keybinds->keyboxes[key_to_grid[key_index]]->redraw();
             return 1;
         }
     }
 
-    return Fl_Widget::handle(e);
+    return Fl_Window::handle(e);
 }
 
 void KeyBox::draw()  {
