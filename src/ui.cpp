@@ -75,6 +75,24 @@ void Chip8Registers::update(const Chip8& chip8) {
     sp->value(static_cast<int>(chip8.sp));
 }
 
+void Chip8Registers::activate() {
+    for(int i{ 0 }; i < 16; ++i) {
+        V[i]->activate();
+    }
+    I->activate();
+    pc->activate();
+    sp->activate();
+}
+
+void Chip8Registers::deactivate() {
+    for(int i{ 0 }; i < 16; ++i) {
+        V[i]->deactivate();
+    }
+    I->deactivate();
+    pc->deactivate();
+    sp->deactivate();
+}
+
 Chip8Timers::Chip8Timers(int x, int y) : Fl_Group(x, y, 10, 242) {
     begin();
 
@@ -97,6 +115,16 @@ Chip8Timers::Chip8Timers(int x, int y) : Fl_Group(x, y, 10, 242) {
     inner->end();
 
     end();
+}
+
+void Chip8Timers::activate() {
+    delay->activate();
+    sound->activate();
+}
+
+void Chip8Timers::deactivate() {
+    delay->deactivate();
+    sound->deactivate();
 }
 
 void Chip8Timers::update(const Chip8& chip8) {

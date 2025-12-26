@@ -23,6 +23,9 @@ public:
     Chip8Registers(int x, int y);
     void update(const Chip8& chip8);
 
+    void activate();
+    void deactivate();
+
 private:
     Fl_Input* V[16];
     Fl_Input* I;
@@ -36,6 +39,9 @@ public:
 
     Chip8Timers(int x, int y);
     void update(const Chip8& chip8);
+
+    void activate();
+    void deactivate();
 
 private:
     Fl_Input* delay;

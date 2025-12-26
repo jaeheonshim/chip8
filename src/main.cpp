@@ -16,10 +16,13 @@ void on_step(Fl_Widget* w, void* userdata) {
 void on_run_pause(Fl_Widget* w, void* userdata) {
     if(runner.running()) {
         gui.controls->run_pause->label("Run");
+        gui.registers->activate();
+        gui.timers->activate();
         runner.pause();
     } else {
         gui.controls->run_pause->label("Pause");
-        gui.display->take_focus();
+        gui.registers->deactivate();
+        gui.timers->deactivate();
         runner.run();
     }
 }
