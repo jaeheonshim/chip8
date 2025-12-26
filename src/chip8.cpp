@@ -36,6 +36,7 @@ void Chip8::clock_cycle() {
     int x{ (opcode & 0x0F00) >> 8 };
     int y{ (opcode & 0x00F0) >> 4 };
     unsigned char flag;
+    unsigned char pos_x, pos_y;
 
     switch(opcode & 0xF000) {
         case 0x0000:
@@ -147,12 +148,17 @@ void Chip8::clock_cycle() {
             break;
         case 0xD000:
             V[0xF] = 0;
+            
+            pos_x = V[x] % 64;
+            pos_y = V[y] % 32;
 
             for(unsigned char r_i{ 0 }; r_i < (opcode & 0xF); ++r_i) {
+                if(pos_y + r_i >= 32) break;
                 for(unsigned char c_i{ 0 }; c_i < 8; ++c_i) {
+                    if(pos_x + c_i >= 64) break;
                     if((memory[I + r_i] & (0x80 >> c_i)) != 0) {
                         // modulus wraps around the drawing
-                        unsigned char& pixel = gfx[(r_i + (V[y] % 32)) * 64 + (V[x] % 64) + c_i];
+                        unsigned char& pixel = gfx[(r_i + pos_y) * 64 + pos_x + c_i];
                         if(pixel == 1) {
                             V[0xF] = 1;
                         }
