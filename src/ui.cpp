@@ -4,6 +4,9 @@
 #include <cstring>
 #include <cctype>
 
+static constexpr int grid_to_key[16] = {1, 2, 3, 12, 4, 5, 6, 13, 7, 8, 9, 14, 10, 0, 11, 15};
+static constexpr int key_to_grid[16] = {13, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 14, 3, 7, 11, 15};
+
 inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int label_size = 36) {
     auto* row = new Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW);
     row->begin();
@@ -156,7 +159,7 @@ Chip8Keybinds::Chip8Keybinds(Chip8Gui* gui) : Fl_Grid(0, 0, 30, 30) {
     begin();
 
     for(int i{ 0 }; i < 16; ++i) {
-        keyboxes[i] = new KeyBox(0, 0, 0, 0, keybinds[i], i, gui);
+        keyboxes[i] = new KeyBox(0, 0, 0, 0, keybinds[i], grid_to_key[i], gui);
         widget(keyboxes[i], i / 4, i % 4);
     }
 
@@ -167,7 +170,7 @@ Chip8Keybinds::Chip8Keybinds(Chip8Gui* gui) : Fl_Grid(0, 0, 30, 30) {
 int Chip8Keybinds::get_key_index(int k) {
     for(int i{ 0 }; i < 16; ++i) {
         if(keybinds[i] == toupper(k)) {
-            return i;
+            return grid_to_key[i];
         }
     }
 
@@ -242,7 +245,7 @@ int Chip8Display::handle(int e) {
         int key_index = gui->keybinds->get_key_index(key);
         if(key_index != -1) {
             gui->chip.key[key_index] = down;
-            gui->keybinds->keyboxes[key_index]->redraw();
+            gui->keybinds->keyboxes[key_to_grid[key_index]]->redraw();
             return 1;
         }
     }

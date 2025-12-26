@@ -87,6 +87,7 @@ public:
     Chip8Keybinds(Chip8Gui* gui);
 
     int get_key_index(int k);
+
 private:
     char keybinds[16] = {'1', '2', '3', '4',
                         'Q', 'W', 'E', 'R',
