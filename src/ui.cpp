@@ -152,6 +152,9 @@ Chip8Controls::Chip8Controls() : Fl_Flex(0, 0, 0, 55, Fl_Flex::COLUMN) {
 }
 
 void Chip8Display::draw() {
+    if(!off_buffer) off_buffer = fl_create_offscreen(w(), h());
+
+    fl_begin_offscreen(off_buffer);
     fl_color(FL_BLACK);
     fl_rectf(x(), y(), w(), h());
 
@@ -164,14 +167,25 @@ void Chip8Display::draw() {
         for(int x = 0; x < 64; ++x) {
             if(gfx_buffer[y * 64 + x]) {
                 fl_rectf(
-                    this->x() + x * scale,
-                    this->y() + y * scale,
+                    x * scale,
+                    y * scale,
                     scale,
                     scale
                 );
             }
         }
     }
+
+    fl_end_offscreen();
+
+    fl_copy_offscreen(x(), y(), w(), h(), off_buffer, 0, 0);
+}
+
+void Chip8Display::resize(int x, int y, int w, int h) {
+    Fl_Widget::resize(x, y, w, h);
+    if(off_buffer) fl_delete_offscreen(off_buffer);
+    off_buffer = fl_create_offscreen(w, h);
+    redraw();
 }
 
 void Chip8Display::update(const Chip8& chip8) {

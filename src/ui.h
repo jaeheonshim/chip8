@@ -58,11 +58,17 @@ public:
 
     }
 
+    ~Chip8Display() override {
+        if(off_buffer) fl_delete_offscreen(off_buffer);
+    }
+
     void draw() override;
+    void resize(int x, int y, int w, int h) override;
     void update(const Chip8& chip8);
 
 private:
     unsigned char gfx_buffer[64 * 32];
+    Fl_Offscreen off_buffer = 0;
 };
 
 class SpeedMultiplierSlider : public Fl_Hor_Value_Slider {

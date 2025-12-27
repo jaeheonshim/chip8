@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     gui.controls->run_pause->callback(on_run_pause);
     gui.controls->step->callback(on_step);
 
-    std::ifstream ifs("snake.ch8");
+    std::ifstream ifs("breakout.ch8");
     chip8.load(ifs);
 
     return Fl::run();

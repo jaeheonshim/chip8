@@ -18,6 +18,7 @@ public:
 
     void run() {
         r = true;
+        last = clock::now();
         Fl::add_timeout(0.0, &Chip8Runner::tick_cb, this);
     }
 
