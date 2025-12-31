@@ -5,7 +5,7 @@
 #include <chrono>
 
 Chip8 chip8{};
-Chip8Gui gui(800, 450, chip8);
+Chip8Gui gui(1100, 650, chip8);
 Chip8Audio audio{};
 Chip8Runner runner(chip8, gui, audio);
 
@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
 
     std::ifstream ifs("breakout.ch8");
     chip8.load(ifs);
+    gui.disasm_table->load_prog(chip8);
 
     return Fl::run();
 }

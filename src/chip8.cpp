@@ -254,6 +254,7 @@ void Chip8::load(std::istream& prog) {
     constexpr std::size_t MAX_SIZE = 4096 - START;
 
     prog.read(reinterpret_cast<char*>(memory + START), MAX_SIZE);
+    prog_size = (prog.gcount() + 1) / 2;
 
     pc = START;
 }

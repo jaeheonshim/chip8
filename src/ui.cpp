@@ -1,5 +1,7 @@
 #include "ui.h"
 
+#include <FL/fl_draw.H>
+
 #include <string>
 #include <cstring>
 #include <cctype>
@@ -230,6 +232,8 @@ Chip8Gui::Chip8Gui(int w, int h, Chip8& chip) : Fl_Window(w, h, "CHIP-8"), chip(
 
     root->fixed(left_pane, 512);
 
+    disasm_table = new Chip8DisasmTable();
+
     auto* right_pane = new Fl_Flex(0, 0, 0, 0, Fl_Flex::COLUMN);
     right_pane->margin(4);
     right_pane->gap(4);
@@ -266,6 +270,76 @@ int Chip8Gui::handle(int e) {
     }
 
     return Fl_Window::handle(e);
+}
+
+Chip8DisasmTable::Chip8DisasmTable() : Fl_Table_Row(0, 0, 0, 0) {
+    cols(3);
+    col_header(0);
+    row_header(0);
+
+    hscrollbar->hide();
+    hscrollbar->deactivate();
+    
+    rows(300);
+
+    col_width(0, 75);
+    col_width(1, 75);
+    row_height_all(18);
+
+    end();
+}
+
+void Chip8DisasmTable::load_prog(const Chip8& chip) {
+    prog_rows.clear();
+    prog_rows.reserve(chip.prog_size);
+
+    for(unsigned int i{ 0 }; i < chip.prog_size; ++i) {
+        unsigned short addr{ static_cast<unsigned short>(0x200 + (i << 1)) };
+
+        AsmRow row;
+
+        std::sprintf(row.addr, "%04X", addr);
+        std::sprintf(row.bytes, "%04X", (chip.memory[addr] << 8) | (chip.memory[addr + 1]));
+
+        prog_rows.push_back(row);
+    }
+
+    rows(chip.prog_size);
+}
+
+void Chip8DisasmTable::resize(int X, int Y, int W, int H) {
+    Fl_Table_Row::resize(X, Y, W, H);
+
+    int fixed = col_width(0) + col_width(1);
+
+    col_width(2, w() - fixed - Fl::scrollbar_size() - 2);
+}
+
+void Chip8DisasmTable::draw_cell(TableContext context, int R, int C, int X, int Y, int W, int H) {
+    switch(context) {
+        case CONTEXT_STARTPAGE:
+            fl_font(FL_COURIER, 14);
+            return;
+        case CONTEXT_CELL: {
+            AsmRow row{ prog_rows[R] };
+
+            fl_push_clip(X, Y, W, H);
+            fl_color(FL_WHITE);
+            fl_rectf(X, Y, W, H);
+
+            fl_color(FL_BLACK);
+
+            if (C == 0) {
+                fl_draw(row.addr, X + 4, Y + 15);
+            } else if (C == 1) {
+                fl_draw(row.bytes, X + 4, Y + 15);
+            } else if (C == 2) {
+                fl_draw("ADD Vx, Vy", X + 4, Y + 15);
+            }
+            
+            fl_pop_clip();
+        }
+    }
 }
 
 void KeyBox::draw()  {

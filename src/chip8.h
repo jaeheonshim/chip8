@@ -27,6 +27,7 @@ public:
 
     unsigned char key[16];
 
+    unsigned int prog_size = 0;
     bool draw_flag = false;
 
     void initialize();

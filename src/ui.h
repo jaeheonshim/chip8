@@ -12,6 +12,10 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Hor_Value_Slider.H>
+#include <FL/Fl_Table_Row.H>
+
+#include <vector>
+#include <string>
 
 class Chip8Gui; // Forward decl
 class KeyBox;
@@ -105,6 +109,23 @@ private:
                         'Z', 'X', 'C', 'V'};
 };
 
+struct AsmRow {
+    char addr[5];
+    char bytes[5];
+};
+
+class Chip8DisasmTable : public Fl_Table_Row {
+public:
+    std::vector<AsmRow> prog_rows;
+
+    Chip8DisasmTable();
+    void load_prog(const Chip8& chip);
+    void resize(int X, int Y, int W, int H) override;
+
+private:
+    void draw_cell(TableContext context, int R, int C, int X, int Y, int W, int H) override;
+};
+
 class Chip8Gui : public Fl_Window {
 public:
     Chip8Gui(int w, int h, Chip8& chip);
@@ -116,6 +137,7 @@ public:
     Chip8Timers* timers;
     Chip8Controls* controls;
     Chip8Keybinds* keybinds;
+    Chip8DisasmTable* disasm_table;
     Chip8& chip;
 };
 
