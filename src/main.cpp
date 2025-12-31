@@ -35,7 +35,8 @@ int main(int argc, char **argv) {
 
     std::ifstream ifs("breakout.ch8");
     chip8.load(ifs);
-    gui.disasm_table->load_prog(chip8);
+    gui.disasm_table->load_rows(disassemble(chip8));
+    gui.disasm_table->update(chip8);
 
     return Fl::run();
 }

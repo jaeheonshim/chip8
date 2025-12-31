@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chip8.h"
+#include "asm.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Window.H>
@@ -15,12 +16,14 @@
 #include <FL/Fl_Table_Row.H>
 
 #include <vector>
+#include <map>
 #include <string>
 
-const char* hex = "0123456789ABCDEF";
+static const char* hex = "0123456789ABCDEF";
 
 constexpr Fl_Color ASM_OPCODE_COLOR = FL_BLUE;
-constexpr Fl_Color ASM_LITERAL_COLOR = FL_GREEN;
+constexpr Fl_Color ASM_REGISTER_COLOR = FL_BLACK;
+constexpr Fl_Color ASM_LITERAL_COLOR = FL_DARK_GREEN;
 
 class Chip8Gui; // Forward decl
 class KeyBox;
@@ -114,18 +117,15 @@ private:
                         'Z', 'X', 'C', 'V'};
 };
 
-struct AsmRow {
-    char addr[5];
-    char bytes[5];
-    unsigned short opcode;
-};
-
 class Chip8DisasmTable : public Fl_Table_Row {
 public:
+    std::map<unsigned short, int> addr_to_row;
     std::vector<AsmRow> prog_rows;
+    int current_row = -1;
 
     Chip8DisasmTable();
-    void load_prog(const Chip8& chip);
+    void load_rows(const std::vector<AsmRow>& rows);
+    void update(const Chip8& chip);
     void resize(int X, int Y, int W, int H) override;
 
 private:

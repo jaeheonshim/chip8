@@ -5,6 +5,7 @@
 void Chip8Runner::post_clock_cycle() {
     gui.registers->update(chip);
     gui.timers->update(chip);
+    gui.disasm_table->update(chip);
 
     if(chip.draw_flag) {
         chip.draw_flag = false;

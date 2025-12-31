@@ -30,14 +30,18 @@ Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int label_
 }
 
 void draw_asm_colored(int X, int Y, int W, int H, unsigned short opcode) {
-    unsigned short nA, nX, nY, nB;
+    unsigned short nA, nX, nY, nB, nNNN, nKK;
     nA = opcode >> 12;
     nX = (opcode & 0xF00) >> 8;
     nY = (opcode & 0xF0) >> 4;
     nB = (opcode & 0xF);
+    nNNN = (opcode & 0xFFF);
+    nKK = (opcode & 0xFF);
 
     int x = X + 4;
     int baseline = Y + H - 4;
+
+    char hex[5];
 
     auto draw_token = [&](const char* tok, Fl_Color color) {
         fl_color(color);
@@ -60,10 +64,14 @@ void draw_asm_colored(int X, int Y, int W, int H, unsigned short opcode) {
             }
             break;
         case 0x1:
-            draw_token("JP", ASM_OPCODE_COLOR);
+            draw_token("JP ", ASM_OPCODE_COLOR);
+            std::sprintf(hex, "#%03X", nNNN);
+            draw_token(hex, ASM_LITERAL_COLOR);
             break;
         case 0x2:
-            draw_token("CALL", ASM_OPCODE_COLOR);
+            draw_token("CALL ", ASM_OPCODE_COLOR);
+            std::sprintf(hex, "#%03X", nNNN);
+            draw_token(hex, ASM_LITERAL_COLOR);
             break;
         case 0x3:
             draw_token("SE", ASM_OPCODE_COLOR);
@@ -75,7 +83,11 @@ void draw_asm_colored(int X, int Y, int W, int H, unsigned short opcode) {
             draw_token("SE", ASM_OPCODE_COLOR);
             break;
         case 0x6:
-            draw_token("LD", ASM_OPCODE_COLOR);
+            draw_token("LD ", ASM_OPCODE_COLOR);
+            std::sprintf(hex, "V%1X, ", nX);
+            draw_token(hex, ASM_REGISTER_COLOR);
+            std::sprintf(hex, "#%02X", nKK);
+            draw_token(hex, ASM_LITERAL_COLOR);
             break;
         case 0x7:
             draw_token("ADD", ASM_OPCODE_COLOR);
@@ -345,12 +357,12 @@ Chip8Gui::Chip8Gui(int w, int h, Chip8& chip) : Fl_Window(w, h, "CHIP-8"), chip(
     auto* left_pane = new Fl_Flex(0, 0, 0, 0, Fl_Flex::COLUMN);
     
     display = new Chip8Display();
-    left_pane->fixed(display, 256);
+    left_pane->fixed(display, 320);
     keybinds = new Chip8Keybinds(this);
 
     left_pane->end();
 
-    root->fixed(left_pane, 512);
+    root->fixed(left_pane, 640);
 
     disasm_table = new Chip8DisasmTable();
 
@@ -409,24 +421,43 @@ Chip8DisasmTable::Chip8DisasmTable() : Fl_Table_Row(0, 0, 0, 0) {
     end();
 }
 
-void Chip8DisasmTable::load_prog(const Chip8& chip) {
-    prog_rows.clear();
-    prog_rows.reserve(chip.prog_size);
+void Chip8DisasmTable::load_rows(const std::vector<AsmRow>& rows) {
+    prog_rows = rows;
+    addr_to_row.clear();
 
-    for(unsigned int i{ 0 }; i < chip.prog_size; ++i) {
-        unsigned short addr{ static_cast<unsigned short>(0x200 + (i << 1)) };
-        unsigned short opcode{ static_cast<unsigned short>((chip.memory[addr] << 8) | (chip.memory[addr + 1])) };
-
-        AsmRow row;
-
-        std::sprintf(row.addr, "%04X", addr);
-        std::sprintf(row.bytes, "%04X", opcode);
-        row.opcode = opcode;
-
-        prog_rows.push_back(row);
+    for(int i{ 0 }; i < rows.size(); ++i) {
+        addr_to_row[rows[i].addr] = i;
     }
 
-    rows(chip.prog_size);
+
+    // prog_rows.clear();
+    // prog_rows.reserve(chip.prog_size);
+
+    // for(unsigned int i{ 0 }; i < chip.prog_size; ++i) {
+    //     unsigned short addr{ static_cast<unsigned short>(0x200 + (i << 1)) };
+    //     unsigned short opcode{ static_cast<unsigned short>((chip.memory[addr] << 8) | (chip.memory[addr + 1])) };
+
+    //     AsmRow row;
+
+    //     std::sprintf(row.addr, "%04X", addr);
+    //     std::sprintf(row.bytes, "%04X", opcode);
+    //     row.opcode = opcode;
+
+    //     prog_rows.push_back(row);
+    // }
+
+    // rows(chip.prog_size);
+}
+
+void Chip8DisasmTable::update(const Chip8& chip) {
+    if(addr_to_row.find(chip.pc) != addr_to_row.end()) {
+        current_row = addr_to_row[chip.pc];
+        row_position(std::max(current_row - 1, 0));
+    } else {
+        current_row = -1;
+    }
+
+    redraw();
 }
 
 void Chip8DisasmTable::resize(int X, int Y, int W, int H) {
@@ -444,17 +475,26 @@ void Chip8DisasmTable::draw_cell(TableContext context, int R, int C, int X, int 
             return;
         case CONTEXT_CELL: {
             AsmRow row{ prog_rows[R] };
+            char hex[5];
 
             fl_push_clip(X, Y, W, H);
-            fl_color(FL_WHITE);
+
+            if(R == current_row) {
+                fl_color(FL_YELLOW);
+            } else {
+                fl_color(FL_WHITE);
+            }
+
             fl_rectf(X, Y, W, H);
 
             fl_color(FL_BLACK);
 
             if (C == 0) {
-                fl_draw(row.addr, X + 4, Y + 15);
+                std::sprintf(hex, "%04X", row.addr);
+                fl_draw(hex, X + 4, Y + 15);
             } else if (C == 1) {
-                fl_draw(row.bytes, X + 4, Y + 15);
+                std::sprintf(hex, "%04X", row.opcode);
+                fl_draw(hex, X + 4, Y + 15);
             } else if (C == 2) {
                 draw_asm_colored(X, Y, W, H, row.opcode);
             }
