@@ -9,7 +9,10 @@
 static constexpr int grid_to_key[16] = {1, 2, 3, 12, 4, 5, 6, 13, 7, 8, 9, 14, 10, 0, 11, 15};
 static constexpr int key_to_grid[16] = {13, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 14, 3, 7, 11, 15};
 
-inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int label_size = 36) {
+static const char* _8_opcodes[] = {"LD", "OR", "AND", "XOR", "ADD", "SUB", "SHR", "SUBN", 0, 0, 0, 0, 0, 0, "SHL", 0};
+static const char* _opcodes[] = {0, "JP", "CALL", "SE", "SNE", "SE", "LD", "ADD", 0, "SNE", "LD", "JP", "RND", "DRW", 0, 0};
+
+Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int label_size = 36) {
     auto* row = new Fl_Flex(0, 0, 0, 30, Fl_Flex::ROW);
     row->begin();
 
@@ -24,6 +27,123 @@ inline Fl_Flex* create_register_row(const char* label, Fl_Input*& input_ptr, int
     row->fixed(lab, label_size);
 
     return row;
+}
+
+void draw_asm_colored(int X, int Y, int W, int H, unsigned short opcode) {
+    unsigned short nA, nX, nY, nB;
+    nA = opcode >> 12;
+    nX = (opcode & 0xF00) >> 8;
+    nY = (opcode & 0xF0) >> 4;
+    nB = (opcode & 0xF);
+
+    int x = X + 4;
+    int baseline = Y + H - 4;
+
+    auto draw_token = [&](const char* tok, Fl_Color color) {
+        fl_color(color);
+        fl_draw(tok, x, baseline);
+        x += (int) fl_width(tok);
+    };
+
+    switch(nA) {
+        case 0x0:
+            switch(opcode & 0x0FFF) {
+                case 0x00E0:
+                    draw_token("CLS", ASM_OPCODE_COLOR);
+                    break;
+                case 0x00EE:
+                    draw_token("RET", ASM_OPCODE_COLOR);
+                    break;
+                default:
+                    draw_token("SYS", ASM_OPCODE_COLOR);
+                    break;
+            }
+            break;
+        case 0x1:
+            draw_token("JP", ASM_OPCODE_COLOR);
+            break;
+        case 0x2:
+            draw_token("CALL", ASM_OPCODE_COLOR);
+            break;
+        case 0x3:
+            draw_token("SE", ASM_OPCODE_COLOR);
+            break;
+        case 0x4:
+            draw_token("SNE", ASM_OPCODE_COLOR);
+            break;
+        case 0x5:
+            draw_token("SE", ASM_OPCODE_COLOR);
+            break;
+        case 0x6:
+            draw_token("LD", ASM_OPCODE_COLOR);
+            break;
+        case 0x7:
+            draw_token("ADD", ASM_OPCODE_COLOR);
+            break;
+        case 0x8: {
+            const char* op = _8_opcodes[nB];
+            if(op) {
+                draw_token(op, ASM_OPCODE_COLOR);
+            }
+            break;
+        } break;
+        case 0x9:
+            draw_token("SNE", ASM_OPCODE_COLOR);
+            break;
+        case 0xA:
+            draw_token("LD", ASM_OPCODE_COLOR);
+            break;
+        case 0xB:
+            draw_token("JP", ASM_OPCODE_COLOR);
+            break;
+        case 0xC:
+            draw_token("RND", ASM_OPCODE_COLOR);
+            break;
+        case 0xD:
+            draw_token("DRW", ASM_OPCODE_COLOR);
+            break;
+        case 0xE:
+            switch(opcode & 0xFF) {
+                case 0x9E:
+                    draw_token("SKP", ASM_OPCODE_COLOR);
+                    break;
+                case 0xA1:
+                    draw_token("SKNP", ASM_OPCODE_COLOR);
+                    break;
+            }
+            break;
+        case 0xF:
+            switch(opcode & 0xFF) {
+                case 0x07:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x0A:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x15:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x18:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x1E:
+                    draw_token("ADD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x29:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x33:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x55:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+                case 0x65:
+                    draw_token("LD", ASM_OPCODE_COLOR);
+                    break;
+            }
+            break;
+    }
 }
 
 Chip8Registers::Chip8Registers(int x, int y) : Fl_Group(x, y, 2000, 242) {
@@ -282,8 +402,8 @@ Chip8DisasmTable::Chip8DisasmTable() : Fl_Table_Row(0, 0, 0, 0) {
     
     rows(300);
 
-    col_width(0, 75);
-    col_width(1, 75);
+    col_width(0, 60);
+    col_width(1, 60);
     row_height_all(18);
 
     end();
@@ -295,11 +415,13 @@ void Chip8DisasmTable::load_prog(const Chip8& chip) {
 
     for(unsigned int i{ 0 }; i < chip.prog_size; ++i) {
         unsigned short addr{ static_cast<unsigned short>(0x200 + (i << 1)) };
+        unsigned short opcode{ static_cast<unsigned short>((chip.memory[addr] << 8) | (chip.memory[addr + 1])) };
 
         AsmRow row;
 
         std::sprintf(row.addr, "%04X", addr);
-        std::sprintf(row.bytes, "%04X", (chip.memory[addr] << 8) | (chip.memory[addr + 1]));
+        std::sprintf(row.bytes, "%04X", opcode);
+        row.opcode = opcode;
 
         prog_rows.push_back(row);
     }
@@ -334,7 +456,7 @@ void Chip8DisasmTable::draw_cell(TableContext context, int R, int C, int X, int 
             } else if (C == 1) {
                 fl_draw(row.bytes, X + 4, Y + 15);
             } else if (C == 2) {
-                fl_draw("ADD Vx, Vy", X + 4, Y + 15);
+                draw_asm_colored(X, Y, W, H, row.opcode);
             }
             
             fl_pop_clip();
@@ -354,7 +476,6 @@ void KeyBox::draw()  {
     fl_font(FL_HELVETICA, 10);
     fl_color(FL_DARK3);
 
-    static const char* hex = "0123456789ABCDEF";
     char idx[2]{ hex[index], '\0' };
     fl_draw(idx, x() + 3, y() + 10);
 }

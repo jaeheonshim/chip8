@@ -17,6 +17,11 @@
 #include <vector>
 #include <string>
 
+const char* hex = "0123456789ABCDEF";
+
+constexpr Fl_Color ASM_OPCODE_COLOR = FL_BLUE;
+constexpr Fl_Color ASM_LITERAL_COLOR = FL_GREEN;
+
 class Chip8Gui; // Forward decl
 class KeyBox;
 
@@ -112,6 +117,7 @@ private:
 struct AsmRow {
     char addr[5];
     char bytes[5];
+    unsigned short opcode;
 };
 
 class Chip8DisasmTable : public Fl_Table_Row {
