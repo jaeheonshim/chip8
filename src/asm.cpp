@@ -76,6 +76,7 @@ std::vector<AsmRow> disassemble(const Chip8& chip8) {
         if(visited[i]) continue;
 
         visited[i] = true;
+        visited[i+1] = true;
         // if(!is_valid_opcode(opcode)) continue;
 
         result.push_back({i, opcode});
@@ -86,6 +87,13 @@ std::vector<AsmRow> disassemble(const Chip8& chip8) {
                 continue;
             case 0x2000:
                 q.push(opcode & 0xFFF);
+                break;
+            case 0x3000:
+            case 0x4000:
+            case 0x5000:
+            case 0x9000:
+            case 0xE000:
+                q.push(i + 4);
                 break;
             case 0xB000:
                 // dynamic jump... how to handle this?

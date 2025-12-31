@@ -125,7 +125,7 @@ public:
 
     Chip8DisasmTable();
     void load_rows(const std::vector<AsmRow>& rows);
-    void update(const Chip8& chip);
+    void update(const Chip8& chip, bool follow = false);
     void resize(int X, int Y, int W, int H) override;
 
 private:

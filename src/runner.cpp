@@ -55,7 +55,7 @@ void Chip8Runner::tick() {
     }
 
     if(disassembler_update_accum >= 1.0 / DISASSEMBLER_UPDATE_HZ) {
-        gui.disasm_table->update(chip);
+        gui.disasm_table->update(chip, true);
         disassembler_update_accum = 0;
     }
 

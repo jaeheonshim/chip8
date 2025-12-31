@@ -5,6 +5,7 @@
 #include <string>
 #include <cstring>
 #include <cctype>
+#include <iostream>
 
 static constexpr int grid_to_key[16] = {1, 2, 3, 12, 4, 5, 6, 13, 7, 8, 9, 14, 10, 0, 11, 15};
 static constexpr int key_to_grid[16] = {13, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 14, 3, 7, 11, 15};
@@ -449,12 +450,24 @@ void Chip8DisasmTable::load_rows(const std::vector<AsmRow>& rows) {
     // rows(chip.prog_size);
 }
 
-void Chip8DisasmTable::update(const Chip8& chip) {
+void Chip8DisasmTable::update(const Chip8& chip, bool follow) {
     if(addr_to_row.find(chip.pc) != addr_to_row.end()) {
         current_row = addr_to_row[chip.pc];
-        row_position(std::max(current_row - 1, 0));
+
+        // if follow is true, always scroll to the next instruction.
+        // otherwise, only scroll if the next instruction is off the current page
+        if(follow) {
+            row_position(std::max(current_row - 1, 0));
+        } else if(current_row > botrow || current_row < toprow) {
+            if(current_row == botrow + 1) {
+                row_position(current_row);
+            } else {
+                row_position(std::max(current_row - 1, 0));
+            }
+        }
     } else {
         current_row = -1;
+        std::cout << "Missed inst" << std::endl;
     }
 
     redraw();
