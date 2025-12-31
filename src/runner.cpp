@@ -5,7 +5,6 @@
 void Chip8Runner::post_clock_cycle() {
     gui.registers->update(chip);
     gui.timers->update(chip);
-    gui.disasm_table->update(chip);
 
     if(chip.draw_flag) {
         chip.draw_flag = false;
@@ -16,6 +15,7 @@ void Chip8Runner::post_clock_cycle() {
 
 void Chip8Runner::step() {
     chip.clock_cycle();
+    gui.disasm_table->update(chip);
 
     post_clock_cycle();
 }
@@ -26,6 +26,7 @@ void Chip8Runner::tick() {
     last = now;
 
     accum += dt.count();
+    disassembler_update_accum += dt.count();
 
     const double cycle_hz = BASE_CPU_HZ * gui.controls->slider->value();
 
@@ -51,6 +52,11 @@ void Chip8Runner::tick() {
         } else {
             audio.stop();
         }
+    }
+
+    if(disassembler_update_accum >= 1.0 / DISASSEMBLER_UPDATE_HZ) {
+        gui.disasm_table->update(chip);
+        disassembler_update_accum = 0;
     }
 
     post_clock_cycle();

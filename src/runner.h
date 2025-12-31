@@ -8,6 +8,7 @@
 class Chip8Runner {
 public:
     static constexpr double TIMER_HZ = 60.0;
+    static constexpr double DISASSEMBLER_UPDATE_HZ = 20.0; // much slower since this is expensive to draw
     static constexpr double BASE_CPU_HZ = 500.0;
 
     Chip8Runner(Chip8& c, Chip8Gui& g, Chip8Audio& a) : chip(c), gui(g), audio(a) {
@@ -25,6 +26,7 @@ public:
     void pause() {
         r = false;
         audio.stop();
+        gui.disasm_table->update(chip); // might need to catchup
     }
 
     bool running() {
@@ -42,6 +44,7 @@ private:
 
     clock::time_point last;
     double accum = 0.0;
+    double disassembler_update_accum = 0.0;
     double cycle_accum = 0.0;
 
     static void tick_cb(void* userdata) {
